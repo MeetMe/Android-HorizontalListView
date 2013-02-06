@@ -1,0 +1,56 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:widget="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="5dp"
+            android:text="@string/simple_string_list"
+            android:textSize="18sp" />
+
+        <com.meetme.android.horizontallistview.HorizontalListView
+            android:id="@+id/hlvSimpleList"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="5dp"
+            android:text="@string/custom_adapter_list"
+            android:textSize="18sp" />
+
+        <com.meetme.android.horizontallistview.HorizontalListView
+            android:id="@+id/hlvCustomList"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:padding="5dp"
+            android:text="@string/custom_adapter_list_with_dividers"
+            android:textSize="18sp" />
+
+        <com.meetme.android.horizontallistview.HorizontalListView
+            android:id="@+id/hlvCustomListWithDividerAndFadingEdge"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:divider="#e00"
+            android:fadingEdgeLength="5dp"
+            android:requiresFadingEdge="horizontal"
+            widget:dividerWidth="3dp" />
+    </LinearLayout>
+
+</ScrollView>

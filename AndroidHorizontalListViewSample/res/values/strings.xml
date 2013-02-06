@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AndroidHorizontalListViewSample</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="simple_string_list">Simple String List</string>
+    <string name="custom_adapter_list">Custom Adapter List</string>
+    <string name="custom_adapter_list_with_dividers">Custom Adapter List with dividers</string>
+
+</resources>
