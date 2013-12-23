@@ -867,6 +867,16 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         requestLayout();
     }
 
+    @Override
+    public int getFirstVisiblePosition() {
+        return mLeftViewAdapterIndex;
+    }
+
+    @Override
+    public int getLastVisiblePosition() {
+        return mRightViewAdapterIndex;
+    }
+
     /** Draws the overscroll edge glow effect on the left and right sides of the horizontal list */
     private void drawEdgeGlow(Canvas canvas) {
         if (mEdgeGlowLeft != null && !mEdgeGlowLeft.isFinished() && isEdgeGlowEnabled()) {
