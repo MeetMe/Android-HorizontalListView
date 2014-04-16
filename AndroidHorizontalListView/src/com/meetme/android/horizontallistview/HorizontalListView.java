@@ -817,7 +817,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
      */
     private View getChild(int adapterIndex) {
         if (adapterIndex >= mLeftViewAdapterIndex && adapterIndex <= mRightViewAdapterIndex) {
-            getChildAt(adapterIndex - mLeftViewAdapterIndex);
+            return getChildAt(adapterIndex - mLeftViewAdapterIndex);
         }
 
         return null;
