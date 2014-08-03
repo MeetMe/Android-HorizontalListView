@@ -1,3 +1,5 @@
+package nl.vincentketelaars.mexen;
+
 /*
  * The MIT License Copyright (c) 2011 Paul Soucy (paul@dev-smart.com)
  * The MIT License Copyright (c) 2013 MeetMe, Inc.
@@ -24,8 +26,6 @@
  * It has been substantially rewritten and added to from the original version.
  */
 // @formatter:on
-package com.meetme.android.horizontallistview;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -50,11 +50,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.Scroller;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 
 // @formatter:off
 /**
@@ -113,7 +108,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     protected ListAdapter mAdapter;
 
     /** Holds a cache of recycled views to be reused as needed */
-    private List<Queue<View>> mRemovedViewsCache = new ArrayList<Queue<View>>();
+    private View[] mRemovedViewsCache;
 
     /** Flag used to mark when the adapters data has changed, so the view can be relaid out */
     private boolean mDataChanged = false;
@@ -365,6 +360,9 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             mHasNotifiedRunningLowOnData = false;
 
             unpressTouchedChild();
+            
+            // Change size of cache array
+            initializeRecycledViewCache(mAdapter.getCount());
 
             // Invalidate and request layout to force this view to completely redraw itself
             invalidate();
@@ -409,7 +407,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             mAdapter.registerDataSetObserver(mAdapterDataObserver);
         }
 
-        initializeRecycledViewCache(mAdapter.getViewTypeCount());
+        initializeRecycledViewCache(mAdapter.getCount());
         reset();
     }
 
@@ -423,12 +421,9 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
      *
      * @param viewTypeCount - The total number of different views supported
      */
-    private void initializeRecycledViewCache(int viewTypeCount) {
-        // The cache is created such that the response from mAdapter.getItemViewType is the array index to the correct cache for that item.
-        mRemovedViewsCache.clear();
-        for (int i = 0; i < viewTypeCount; i++) {
-            mRemovedViewsCache.add(new LinkedList<View>());
-        }
+    private void initializeRecycledViewCache(int numViews) {
+        // Create a cache such that the index of the array holds the recycable view
+        mRemovedViewsCache = new View[numViews];
     }
 
     /**
@@ -438,13 +433,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
      * @return
      */
     private View getRecycledView(int adapterIndex) {
-        int itemViewType = mAdapter.getItemViewType(adapterIndex);
-
-        if (isItemViewTypeValid(itemViewType)) {
-            return mRemovedViewsCache.get(itemViewType).poll();
-        }
-
-        return null;
+        return mRemovedViewsCache[adapterIndex];
     }
 
     /**
@@ -454,17 +443,8 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
      * @param view
      */
     private void recycleView(int adapterIndex, View view) {
-        // There is one Queue of views for each different type of view.
-        // Just add the view to the pile of other views of the same type.
-        // The order they are added and removed does not matter.
-        int itemViewType = mAdapter.getItemViewType(adapterIndex);
-        if (isItemViewTypeValid(itemViewType)) {
-            mRemovedViewsCache.get(itemViewType).offer(view);
-        }
-    }
-
-    private boolean isItemViewTypeValid(int itemViewType) {
-        return itemViewType < mRemovedViewsCache.size();
+        // Set the view at the index
+        mRemovedViewsCache[adapterIndex] = view;
     }
 
     /** Adds a child to this viewgroup and measures it so it renders the correct size */
