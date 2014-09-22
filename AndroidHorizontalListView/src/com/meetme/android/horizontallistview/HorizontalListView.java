@@ -666,7 +666,8 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
                 int oldMaxX = mMaxX;
 
                 // Determine the maximum x position
-                mMaxX = mCurrentX + (rightView.getRight() - getPaddingLeft()) - getRenderWidth();
+                MarginLayoutParams params = (MarginLayoutParams) getLayoutParams(rightView);
+                mMaxX = mCurrentX + (rightView.getRight() - getPaddingLeft()) - getRenderWidth() + params.rightMargin;
 
                 // Handle the case where the views do not fill at least 1 screen
                 if (mMaxX < 0) {
@@ -787,8 +788,10 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             // Loop each child view
             for (int i = 0; i < childCount; i++) {
                 View child = getChildAt(i);
-                int left = leftOffset + getPaddingLeft();
-                int top = getPaddingTop();
+                MarginLayoutParams params = (MarginLayoutParams) getLayoutParams(child);
+
+                int left = leftOffset + getPaddingLeft() + params.leftMargin;
+                int top = getPaddingTop() + params.topMargin;
                 int right = left + child.getMeasuredWidth();
                 int bottom = top + child.getMeasuredHeight();
 
@@ -796,7 +799,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
                 child.layout(left, top, right, bottom);
 
                 // Increment our offset by added child's size and divider width
-                leftOffset += child.getMeasuredWidth() + mDividerWidth;
+                leftOffset += child.getMeasuredWidth() + mDividerWidth + params.leftMargin + params.rightMargin;
             }
         }
     }
