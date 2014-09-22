@@ -663,11 +663,15 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
             View rightView = getRightmostChild();
 
             if (rightView != null) {
+                MarginLayoutParams params;
                 int oldMaxX = mMaxX;
 
                 // Determine the maximum x position
-                MarginLayoutParams params = (MarginLayoutParams) getLayoutParams(rightView);
-                mMaxX = mCurrentX + (rightView.getRight() - getPaddingLeft()) - getRenderWidth() + params.rightMargin;
+                mMaxX = mCurrentX + (rightView.getRight() - getPaddingLeft()) - getRenderWidth();
+                if (getLayoutParams(rightView) instanceof MarginLayoutParams) {
+                    params = (MarginLayoutParams) getLayoutParams(rightView);
+                    mMaxX += params.rightMargin;
+                }
 
                 // Handle the case where the views do not fill at least 1 screen
                 if (mMaxX < 0) {
@@ -787,19 +791,33 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
             // Loop each child view
             for (int i = 0; i < childCount; i++) {
+                int left;
+                int top;
+                int right;
+                int bottom;
                 View child = getChildAt(i);
-                MarginLayoutParams params = (MarginLayoutParams) getLayoutParams(child);
+                MarginLayoutParams params = null;
 
-                int left = leftOffset + getPaddingLeft() + params.leftMargin;
-                int top = getPaddingTop() + params.topMargin;
-                int right = left + child.getMeasuredWidth();
-                int bottom = top + child.getMeasuredHeight();
+                left = leftOffset + getPaddingLeft();
+                top = getPaddingTop();
+                if (child.getLayoutParams() instanceof MarginLayoutParams) {
+                    params = (MarginLayoutParams) getLayoutParams(child);
+
+                    left += params.leftMargin;
+                    top += params.topMargin;
+                }
+                right = left + child.getMeasuredWidth();
+                bottom = top + child.getMeasuredHeight();
 
                 // Layout the child
                 child.layout(left, top, right, bottom);
 
                 // Increment our offset by added child's size and divider width
-                leftOffset += child.getMeasuredWidth() + mDividerWidth + params.leftMargin + params.rightMargin;
+                if (params != null) {
+                    leftOffset += child.getMeasuredWidth() + mDividerWidth + params.leftMargin + params.rightMargin;
+                } else {
+                    leftOffset += child.getMeasuredWidth() + mDividerWidth;
+                }
             }
         }
     }
