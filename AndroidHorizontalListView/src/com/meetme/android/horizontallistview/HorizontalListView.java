@@ -800,7 +800,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
                 left = leftOffset + getPaddingLeft();
                 top = getPaddingTop();
-                if (child.getLayoutParams() instanceof MarginLayoutParams) {
+                if (getLayoutParams(child) instanceof MarginLayoutParams) {
                     params = (MarginLayoutParams) getLayoutParams(child);
 
                     left += params.leftMargin;
