@@ -480,7 +480,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
      * @param child The child.
      */
     private void measureChild(View child) {
-        ViewGroup.LayoutParams childLayoutParams = getLayoutParams(child);
+        LayoutParams childLayoutParams = getLayoutParams(child);
         int childHeightSpec = ViewGroup.getChildMeasureSpec(mHeightMeasureSpec, getPaddingTop() + getPaddingBottom(), childLayoutParams.height);
 
         int childWidthSpec;
@@ -494,14 +494,25 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     }
 
     /** Gets a child's layout parameters, defaults if not available. */
-    private ViewGroup.LayoutParams getLayoutParams(View child) {
-        ViewGroup.LayoutParams layoutParams = child.getLayoutParams();
+    private LayoutParams getLayoutParams(View child) {
+        LayoutParams layoutParams = child.getLayoutParams();
         if (layoutParams == null) {
             // Since this is a horizontal list view default to matching the parents height, and wrapping the width
-            layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            layoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
         }
 
         return layoutParams;
+    }
+
+    /**
+     * Gets a child's margin layout parameters, null if not available
+     */
+    private MarginLayoutParams getMarginLayoutParams(View view) {
+        MarginLayoutParams params = null;
+        if (view != null && getLayoutParams(view) instanceof MarginLayoutParams) {
+            params = (MarginLayoutParams) getLayoutParams(view);
+        }
+        return params;
     }
 
     @SuppressLint("WrongCall")
@@ -667,6 +678,10 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
                 // Determine the maximum x position
                 mMaxX = mCurrentX + (rightView.getRight() - getPaddingLeft()) - getRenderWidth();
+                MarginLayoutParams params = getMarginLayoutParams(rightView);
+                if (params != null) {
+                    mMaxX += params.rightMargin;
+                }
 
                 // Handle the case where the views do not fill at least 1 screen
                 if (mMaxX < 0) {
@@ -684,11 +699,16 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
     /** Adds children views to the left and right of the current views until the screen is full */
     private void fillList(final int dx) {
+        MarginLayoutParams params;
         // Get the rightmost child and determine its right edge
         int edge = 0;
         View child = getRightmostChild();
         if (child != null) {
             edge = child.getRight();
+            params = getMarginLayoutParams(child);
+            if (params != null) {
+                edge -= params.rightMargin;
+            }
         }
 
         // Add new children views to the right, until past the edge of the screen
@@ -699,6 +719,10 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         child = getLeftmostChild();
         if (child != null) {
             edge = child.getLeft();
+            params = getMarginLayoutParams(child);
+            if (params != null) {
+                edge -= params.leftMargin;
+            }
         }
 
         // Add new children views to the left, until past the edge of the screen
@@ -706,14 +730,22 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     }
 
     private void removeNonVisibleChildren(final int dx) {
+        int rightMargin = 0;
         View child = getLeftmostChild();
+        MarginLayoutParams params = getMarginLayoutParams(child);
+        if (params != null) {
+            rightMargin = params.rightMargin;
+        }
 
         // Loop removing the leftmost child, until that child is on the screen
-        while (child != null && child.getRight() + dx <= 0) {
+        while (child != null && child.getRight() + rightMargin + dx <= 0) {
             // The child is being completely removed so remove its width from the display offset and its divider if it has one.
             // To remove add the size of the child and its divider (if it has one) to the offset.
             // You need to add since its being removed from the left side, i.e. shifting the offset to the right.
             mDisplayOffset += isLastItemInAdapter(mLeftViewAdapterIndex) ? child.getMeasuredWidth() : mDividerWidth + child.getMeasuredWidth();
+            if (params != null) {
+                mDisplayOffset += params.rightMargin;
+            }
 
             // Add the removed view to the cache
             recycleView(mLeftViewAdapterIndex, child);
@@ -726,6 +758,10 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
             // Get the new leftmost child
             child = getLeftmostChild();
+            params = getMarginLayoutParams(child);
+            if (params != null) {
+                mDisplayOffset += params.leftMargin;
+            }
         }
 
         child = getRightmostChild();
@@ -766,6 +802,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         while (leftEdge + dx - mDividerWidth > 0 && mLeftViewAdapterIndex >= 1) {
             mLeftViewAdapterIndex--;
             View child = mAdapter.getView(mLeftViewAdapterIndex, getRecycledView(mLeftViewAdapterIndex), this);
+            MarginLayoutParams params = getMarginLayoutParams(child);
             addAndMeasureChild(child, INSERT_AT_START_OF_LIST);
 
             // If first view, then no divider to the left of it
@@ -773,6 +810,9 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
             // If on a clean edge then just remove the child, otherwise remove the divider as well
             mDisplayOffset -= leftEdge + dx == 0 ? child.getMeasuredWidth() : mDividerWidth + child.getMeasuredWidth();
+            if (params != null) {
+                mDisplayOffset -= (params.leftMargin + params.rightMargin);
+            }
         }
     }
 
@@ -786,17 +826,31 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
             // Loop each child view
             for (int i = 0; i < childCount; i++) {
+                int left;
+                int top;
+                int right;
+                int bottom;
                 View child = getChildAt(i);
-                int left = leftOffset + getPaddingLeft();
-                int top = getPaddingTop();
-                int right = left + child.getMeasuredWidth();
-                int bottom = top + child.getMeasuredHeight();
+
+                left = leftOffset + child.getPaddingLeft();
+                top = child.getPaddingTop();
+                MarginLayoutParams params = getMarginLayoutParams(child);
+                if (params != null) {
+                    left += params.leftMargin;
+                    top += params.topMargin;
+                }
+                right = left + child.getMeasuredWidth();
+                bottom = top + child.getMeasuredHeight();
 
                 // Layout the child
                 child.layout(left, top, right, bottom);
 
                 // Increment our offset by added child's size and divider width
-                leftOffset += child.getMeasuredWidth() + mDividerWidth;
+                if (params != null) {
+                    leftOffset += child.getMeasuredWidth() + mDividerWidth + params.leftMargin + params.rightMargin;
+                } else {
+                    leftOffset += child.getMeasuredWidth() + mDividerWidth;
+                }
             }
         }
     }

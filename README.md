@@ -34,6 +34,7 @@ Notice you set the `dividerWidth` via the XML namespace you just defined as it i
 ## Contributors
 
  - [Bill Donahue](https://github.com/bdonahue)
+ - [Peter Siegmund](https://github.com/mars3142)
 
 ## Licenses
 
